@@ -48,3 +48,8 @@ initial-input-mode
 switch-keys
 word-commit
 ```
+
+## Directories
+
+- ibus/     sample in ibus. currently not working
+- pyside2/  pyside2 dbus communication sample
