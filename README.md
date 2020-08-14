@@ -53,3 +53,8 @@ word-commit
 
 - ibus/     sample in ibus. currently not working
 - pyside2/  pyside2 dbus communication sample
+
+## Reference
+
+- https://lispholic.tistory.com/38
+- http://0pointer.net/blog/the-new-sd-bus-api-of-systemd.html

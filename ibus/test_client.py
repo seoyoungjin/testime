@@ -20,10 +20,8 @@ from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import IBus
 
-#from IBus import keysyms
-#from IBus import modifier
-import keysyms
-import modifier
+from IBus import keysyms
+from IBus import modifier
 
 dbus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
 
