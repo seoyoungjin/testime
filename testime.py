@@ -14,7 +14,7 @@ from PySide2.QtWidgets import QWidget, QVBoxLayout
 from PySide2.QtWidgets import QPushButton, QApplication
 
 from testime.ibus_config import IBus_Address
-from testime import keysyms, modifier
+from testime.keyconv import KeysymConv, ModConv
 
 IBUS_CAP_PREEDIT_TEXT       = 1
 IBUS_CAP_AUXILIARY_TEXT     = 1 << 1
@@ -54,7 +54,7 @@ class MyCanvas(QWidget):
         self.ic = bus.get_object('org.freedesktop.IBus', ic_path)
         self.iface = dbus.Interface(self.ic, IBUS_INPUT_CONTEXT)
 
-        self.iface.SetCapabilities(255)
+        self.iface.SetCapabilities(9)
         self.iface.connect_to_signal("CommitText", self.__commit_text_cb)
 
         self.iface.connect_to_signal("UpdatePreeditText", self.__update_preedit_text_cb)
@@ -80,13 +80,15 @@ class MyCanvas(QWidget):
         QWidget.__init__(self)
 
     def keyPressEvent(self, event):
-        print('key press', event)
-        self.iface.ProcessKeyEvent(keysyms.space, 0, modifier.SHIFT_MASK)
-        self.iface.ProcessKeyEvent(keysyms.K, 0, 0)
+        keysym = KeysymConv(event.key())
+        mod = ModConv(event.modifiers())
+        ret = self.iface.ProcessKeyEvent(keysym, 0, mod)
+        print('key press', event.key(), 'returns', ret)
 
     def mousePressEvent(self, event):
         print('mouse press')
         self.setFocus()
+        print("Engine = ", self.iface.GetEngine()[2])
 
     def focusInEvent(self, event):
         print('focus in event')
@@ -100,7 +102,7 @@ class MyCanvas(QWidget):
         print("_commit_text_cb", text)
 
     def __update_preedit_text_cb(self, text, cursor_pos, visible):
-        print("__update_preedit_text_cb", text)
+        print("__update_preedit_text_cb", text, cursor_pos, visible)
         self.__preedit = text
         self.__preedit_visible = visible
         self.__invalidate()
@@ -142,7 +144,7 @@ class MyCanvas(QWidget):
     def __update_lookup_table_cb(self, lookup_table, visible):
         print("__update_lookup_table_cb")
         self.__lookup_table = lookup_table
-        self.__lookup_table_vis 
+        self.__lookup_table_visible = True
         self.__invalidate()
 
     def __show_lookup_table_cb(self):

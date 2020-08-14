@@ -17,7 +17,3 @@ context.Introspect(dbus_interface="org.freedesktop.DBus.Introspectable")
 engines = ibus.ListEngines(dbus_interface='org.freedesktop.IBus')
 
 print(engines[0])
-
-ctx2_path = ibus.CreateInputContext("Test", dbus_interface='org.freedesktop.IBus')
-ctx2 = bus.get_object('org.freedesktop.IBus', ctx2_path)
-ctx2.GetEngine(dbus_interface='org.freedesktop.IBus.InputContext')
