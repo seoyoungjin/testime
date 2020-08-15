@@ -9,9 +9,10 @@ import dbus
 import dbus.service
 import dbus.mainloop.glib
 
+from PySide2 import QtCore
 from PySide2.QtCore import *
-from PySide2.QtWidgets import QWidget, QVBoxLayout
-from PySide2.QtWidgets import QPushButton, QApplication
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
 
 from testime.ibus_config import IBus_Address
 from testime.keyconv import KeysymConv, ModConv
@@ -41,12 +42,8 @@ except dbus.DBusException:
     print_exc()
     sys.exit(1)
 
-# signal handler
-def button_quit():
-    pass
 
-
-class MyCanvas(QWidget):
+class DrawingArea(QWidget):
     def __init__(self, name, session):
         self.bus = session
         self.ibus = bus.get_object(IBUS_SERVICE, IBUS_PATH)
@@ -79,83 +76,107 @@ class MyCanvas(QWidget):
 
         QWidget.__init__(self)
 
+        self.__text = ""
+        self.setBackgroundRole(QPalette.Base);
+        self.setAutoFillBackground(True)
+
+    def updateTextRect(self):
+        qDebug("SetCursorLocation")
+        # TODO x, y, w, h
+        self.iface.SetCursorLocation(0, 0, 5, 5)
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        # TODO commit and preedit different color
+        painter.setFont(QFont("Arial",18))
+        painter.drawText(0, 30, self.__text)
+
     def keyPressEvent(self, event):
         keysym = KeysymConv(event.key())
         mod = ModConv(event.modifiers())
-        ret = self.iface.ProcessKeyEvent(keysym, 0, mod)
-        print('key press', event.key(), 'returns', ret)
+        # TODO keycode
+        ret = self.iface.ProcessKeyEvent(keysym, event.nativeScanCode(), mod)
+        qDebug("key press %s return %d" % (event.key(), ret))
+        if not ret:
+            self.__text += event.text()
+        self.updateTextRect()
 
     def mousePressEvent(self, event):
-        print('mouse press')
+        qDebug('mouse press')
         self.setFocus()
-        print("Engine = ", self.iface.GetEngine()[2])
 
     def focusInEvent(self, event):
-        print('focus in event')
         self.iface.FocusIn()
+        qDebug("focus in : Engine = %s" % self.iface.GetEngine()[2])
+        self.updateTextRect()
 
     def focusOutEvent(self, event):
-        print('focus out event')
+        qDebug('focus out event')
         self.iface.FocusOut()
 
     def __commit_text_cb(self, text):
-        print("_commit_text_cb", text)
+        qDebug("__commit_text_cb : %s" % text[2])
+        self.__text += text[2]
 
     def __update_preedit_text_cb(self, text, cursor_pos, visible):
-        print("__update_preedit_text_cb", text, cursor_pos, visible)
+        assert(text[0] == 'IBusText')
+        qDebug("__update_preedit_text_cb text = %s cursor_pos = %d visible = %d" %
+                (text[2], cursor_pos, visible))
         self.__preedit = text
         self.__preedit_visible = visible
         self.__invalidate()
+        self.updateTextRect()
 
     def __show_preedit_text_cb(self):
-        print("__show_preedit_text_cb")
+        qDebug("__show_preedit_text_cb")
         if self.__preedit_visible:
             return
         self.__preedit_visible = True
         self.__invalidate()
 
     def __hide_preedit_text_cb(self):
-        print("__hide_preedit_text_cb")
+        qDebug("__hide_preedit_text_cb")
         if not self.__preedit_visible:
             return
         self.__preedit_visible = False
         self.__invalidate()
 
     def __update_aux_text_cb(self, text, visible):
-        print("__update_aux_text_cb")
+        qDebug("__update_aux_text_cb")
         self.__aux_string = text
         self.__aux_string_visible = visible
         self.__invalidate()
 
     def __show_aux_text_cb(self):
-        print("__show_aux_text_cb")
+        qDebug("__show_aux_text_cb")
         if self.__aux_string_visible:
             return
         self.__aux_string_visible = True
         self.__invalidate()
 
     def __hide_aux_text_cb(self):
-        print("__hide_aux_text_cb")
+        qDebug("__hide_aux_text_cb")
         if not self.__aux_string_visible:
             return
         self.__aux_string_visible = False
         self.__invalidate()
 
     def __update_lookup_table_cb(self, lookup_table, visible):
-        print("__update_lookup_table_cb")
+        qDebug("__update_lookup_table_cb")
         self.__lookup_table = lookup_table
         self.__lookup_table_visible = True
         self.__invalidate()
 
     def __show_lookup_table_cb(self):
-        print("__show_lookup_table_cb")
+        qDebug("__show_lookup_table_cb")
         if self.__lookup_table_visible:
             return
         self.__lookup_table_visible = True
         self.__invalidate()
 
     def __hide_lookup_table_cb(self):
-        print("__hide_lookup_table_cb")
+        qDebug("__hide_lookup_table_cb")
         if not self.__lookup_table_visible:
             return
         self.__lookup_table_visible = False
@@ -164,6 +185,10 @@ class MyCanvas(QWidget):
     def __invalidate(self):
         self.__is_invalidate = True
 
+    def clear(self):
+        self.__text = ""
+        self.update()
+
 
 # main function
 if __name__ == '__main__':
@@ -171,17 +196,67 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     window = QWidget()
-    layout = QVBoxLayout()
-    canvas = MyCanvas("TestIME", bus)
-    canvas.setFixedSize(300, 300)
+    window.setWindowTitle("TestIME")
+    layout = QGridLayout()
 
-    button = QPushButton("Quit")
-    button.clicked.connect(app.quit)
+    canvas = DrawingArea("TestIME", bus)
+    canvas.setMinimumSize(QSize(400, 40))
+    log = QListWidget()
 
-    layout.addWidget(canvas)
-    layout.addWidget(button)
+    vlayout = QVBoxLayout()
+
+    ime_combo = QComboBox()
+    ime_combo.addItem("IBus")
+    ime_combo.addItem("Fcitx")
+
+    testset_combo = QComboBox()
+    testset_combo.addItem("2bulsik")
+    testset_combo.addItem("3bulsik")
+
+    clear = QPushButton("Clear")
+
+    quit = QPushButton("Quit")
+    quit.clicked.connect(app.quit)
+
+    vlayout.addWidget(QLabel("IME"))
+    vlayout.addWidget(ime_combo)
+    vlayout.addWidget(QLabel("Test Set"))
+    vlayout.addWidget(testset_combo)
+    vlayout.addStretch()
+    vlayout.addWidget(clear)
+    vlayout.addWidget(quit)
+
+    layout.addWidget(canvas, 0 ,0)
+    layout.addWidget(log, 1, 0)
+    layout.addLayout(vlayout, 0, 1, 2 ,1)
 
     window.setLayout(layout)
     window.show()
+
+    def clear_canvas_log():
+        canvas.clear()
+        log.clear()
+
+    clear.clicked.connect(clear_canvas_log)
+
+    def qt_message_handler(mode, context, message):
+        item = QListWidgetItem(message)
+        if message[0] == '_':
+            item.setBackground(QColor('#ffff99'))
+        log.addItem(item)
+        log.scrollToBottom()
+        if mode == QtCore.QtInfoMsg:
+            mode = 'INFO'
+        elif mode == QtCore.QtWarningMsg:
+            mode = 'WARNING'
+        elif mode == QtCore.QtCriticalMsg:
+            mode = 'CRITICAL'
+        elif mode == QtCore.QtFatalMsg:
+            mode = 'FATAL'
+        else:
+            mode = 'DEBUG'
+        print('%s: %s' % (mode, message))
+
+    QtCore.qInstallMessageHandler(qt_message_handler)
 
     app.exec_()

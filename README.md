@@ -2,8 +2,28 @@
 
 I found out that there is an incomprehensible problem
 when I input Korean to SDL2 with Ibus on Linux.
-I felt that it would not be easy to analyze either side,
-so I decided to simply recreate the bug with python.
+It would not be easy to analyze either side,
+so I decided to simply recreate that bug with python.
+
+![TestIME](screenshot/TestIME_20200815.png TestIME)
+
+## Todo
+
+- [x] gui log
+- [ ] view text and preedit text in different color
+- [ ] backspace handling
+- [ ] finish keysym adn keycode
+- [ ] fcitx
+- [ ] cursor positon
+- [ ] batch test set
+- [ ] other language and IME(?)
+
+## System and tools version
+
+- ubuntu 20.04
+- ibus 1.5.22
+- python 3.8.2
+- pip3 install pyside2
 
 ## IBus
 
@@ -15,29 +35,34 @@ IBus have the following conventions:
 
 IBus is almost standard input protocol, so I thought it would be well managed,
 but there's no protocol description.
-Furthermore python source code in github was also an old version, so it dosen't work.
+Furthermore python source code in github was also old version, so it dosen't work.
 
 - It's hard to understand for me because IBus highly depends on GLib/Gnome. 
 - it hides the dbus protocol.
 
 After a few attempts I give up making a protype with IBus and I decided to make
-it with DBus protocol. TT
+it with direct DBus protocol. TT
 
-# DBus
+# DBus library and python bindings
 
 There are many dbus implementations and python bindings.
 
-- libdubs
+- libdbus
 - GDBus
 - QtDBus
 - sd-dbus
 
-- python-dbus (old?)
+- dbus-python
 - pydbus
 - pysdbus
-- QtDBus with PyQt5
+- QtDBus with PyQt5 / PySide2
+
+After triral and error, I selected dbus-python and PySide2.
 
 ## DConf
+
+I want to know current cnnfiguration of IBus hangul.
+But it seems to store setting data to DConf inseat of DBus property.
 
 ```
 dconf list /org/freedesktop/ibus/engine/hangul/
@@ -48,7 +73,6 @@ initial-input-mode
 switch-keys
 word-commit
 ```
-
 ## Directories
 
 - ibus/     sample in ibus. currently not working
