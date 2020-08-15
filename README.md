@@ -5,7 +5,7 @@ when I input Korean to SDL2 with Ibus on Linux.
 It would not be easy to analyze either side,
 so I decided to simply recreate that bug with python.
 
-![TestIME](screenshot/TestIME_20200815.png TestIME)
+![TestIME](screenshot/TestIME_20200815.png)
 
 ## Todo
 
