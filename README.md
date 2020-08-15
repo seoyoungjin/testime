@@ -3,18 +3,18 @@
 I found out that there is an incomprehensible problem
 when I input Korean to SDL2 with Ibus on Linux.
 It would not be easy to analyze either side,
-so I decided to simply recreate that bug with python.
+so I decided to simply recreate this bug with python.
 
 ![TestIME](screenshot/TestIME_20200815.png)
 
 ## Todo
 
 - [x] gui log
-- [ ] view text and preedit text in different color
-- [ ] backspace handling
-- [ ] finish keysym adn keycode
+- [x] view text and preedit text in different color
+- [x] backspace handling
+- [ ] finish keysym, keycode and modifiers conversion
 - [ ] fcitx
-- [ ] cursor positon
+- [ ] cursor positon / lookup table position
 - [ ] batch test set
 - [ ] other language and IME(?)
 
@@ -45,24 +45,27 @@ it with direct DBus protocol. TT
 
 # DBus library and python bindings
 
-There are many dbus implementations and python bindings.
+many dbus implementations
 
 - libdbus
 - GDBus
 - QtDBus
 - sd-dbus
 
+python bindings
+
 - dbus-python
 - pydbus
-- pysdbus
+- GDbus python binging
 - QtDBus with PyQt5 / PySide2
+- pysdbus
 
-After triral and error, I selected dbus-python and PySide2.
+After several trials and errors, I selected dbus-python and PySide2.
 
-## DConf
+## DConf (for future reference)
 
-I want to know current cnnfiguration of IBus hangul.
-But it seems to store setting data to DConf inseat of DBus property.
+I want to know current status of IBus hangul and contol with DBus if possible.
+But it seems to store setting data using DConf instead of DBus property.
 
 ```
 dconf list /org/freedesktop/ibus/engine/hangul/
@@ -75,10 +78,11 @@ word-commit
 ```
 ## Directories
 
-- ibus/     sample in ibus. currently not working
+- ibus/     samples at ibus source. currently not working
 - pyside2/  pyside2 dbus communication sample
 
 ## Reference
 
+- https://seoyoungjin.github.io/ibus/text%20input/IBus/
 - https://lispholic.tistory.com/38
 - http://0pointer.net/blog/the-new-sd-bus-api-of-systemd.html

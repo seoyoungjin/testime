@@ -88,95 +88,105 @@ class DrawingArea(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        # TODO commit and preedit different color
         painter.setFont(QFont("Arial",18))
         painter.drawText(0, 30, self.__text)
+        # drw preedit text with diffrent color
+        if self.__preedit_visible and self.__preedit:
+            rect = painter.boundingRect(self.rect(), self.__text)
+            painter.setPen(Qt.red)
+            painter.drawText(rect.width(), 30, self.__preedit)
 
     def keyPressEvent(self, event):
         keysym = KeysymConv(event.key())
         mod = ModConv(event.modifiers())
-        # TODO keycode
         ret = self.iface.ProcessKeyEvent(keysym, event.nativeScanCode(), mod)
-        qDebug("key press %s return %d" % (event.key(), ret))
+        qDebug("keyPress : %s (%d) returns %d" %
+                (QKeySequence(event.key()).toString(), event.key(), ret))
         if not ret:
-            self.__text += event.text()
+            if event.text().isprintable():
+                self.__text += event.text()
+            elif event.key() == Qt.Key_Backspace:
+                # TODO ibus-hangul handles this
+                if not self.__preedit:
+                    self.__text = self.__text[:-1]
+            elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+                self.__text = ""
         self.updateTextRect()
 
     def mousePressEvent(self, event):
-        qDebug('mouse press')
+        qDebug('mousePress')
         self.setFocus()
 
     def focusInEvent(self, event):
         self.iface.FocusIn()
-        qDebug("focus in : Engine = %s" % self.iface.GetEngine()[2])
-        self.updateTextRect()
+        qDebug("focusIn : Engine = %s" % self.iface.GetEngine()[2])
 
     def focusOutEvent(self, event):
-        qDebug('focus out event')
+        qDebug('focusOut')
         self.iface.FocusOut()
 
     def __commit_text_cb(self, text):
-        qDebug("__commit_text_cb : %s" % text[2])
+        qDebug("< CommitText : %s" % text[2])
         self.__text += text[2]
 
     def __update_preedit_text_cb(self, text, cursor_pos, visible):
         assert(text[0] == 'IBusText')
-        qDebug("__update_preedit_text_cb text = %s cursor_pos = %d visible = %d" %
+        qDebug("< UpdatePreeditText : text = %s cursor_pos = %d visible = %d" %
                 (text[2], cursor_pos, visible))
-        self.__preedit = text
+        self.__preedit = text[2]
         self.__preedit_visible = visible
         self.__invalidate()
         self.updateTextRect()
 
     def __show_preedit_text_cb(self):
-        qDebug("__show_preedit_text_cb")
+        qDebug("< ShowPreeditText")
         if self.__preedit_visible:
             return
         self.__preedit_visible = True
         self.__invalidate()
 
     def __hide_preedit_text_cb(self):
-        qDebug("__hide_preedit_text_cb")
+        qDebug("< HidePreeditText")
         if not self.__preedit_visible:
             return
         self.__preedit_visible = False
         self.__invalidate()
 
     def __update_aux_text_cb(self, text, visible):
-        qDebug("__update_aux_text_cb")
+        qDebug("< UpdateAuxiliaryText")
         self.__aux_string = text
         self.__aux_string_visible = visible
         self.__invalidate()
 
     def __show_aux_text_cb(self):
-        qDebug("__show_aux_text_cb")
+        qDebug("< ShowAuxiliaryText")
         if self.__aux_string_visible:
             return
         self.__aux_string_visible = True
         self.__invalidate()
 
     def __hide_aux_text_cb(self):
-        qDebug("__hide_aux_text_cb")
+        qDebug("< HideAuxiliaryText")
         if not self.__aux_string_visible:
             return
         self.__aux_string_visible = False
         self.__invalidate()
 
     def __update_lookup_table_cb(self, lookup_table, visible):
-        qDebug("__update_lookup_table_cb")
+        qDebug("< UpdateLookupTable")
         self.__lookup_table = lookup_table
         self.__lookup_table_visible = True
         self.__invalidate()
 
     def __show_lookup_table_cb(self):
-        qDebug("__show_lookup_table_cb")
+        qDebug("< ShowLookupTable")
         if self.__lookup_table_visible:
             return
         self.__lookup_table_visible = True
         self.__invalidate()
 
     def __hide_lookup_table_cb(self):
-        qDebug("__hide_lookup_table_cb")
+        qDebug("< HideLookupTable")
         if not self.__lookup_table_visible:
             return
         self.__lookup_table_visible = False
@@ -214,7 +224,6 @@ if __name__ == '__main__':
     testset_combo.addItem("3bulsik")
 
     clear = QPushButton("Clear")
-
     quit = QPushButton("Quit")
     quit.clicked.connect(app.quit)
 
@@ -240,22 +249,28 @@ if __name__ == '__main__':
     clear.clicked.connect(clear_canvas_log)
 
     def qt_message_handler(mode, context, message):
+        if mode == QtCore.QtInfoMsg:
+            text = 'I'
+        elif mode == QtCore.QtWarningMsg:
+            text = 'W'
+        elif mode == QtCore.QtCriticalMsg:
+            text = 'C'
+        elif mode == QtCore.QtFatalMsg:
+            text = 'F'
+        else:
+            text = 'D'
+        print('%s: %s' % (text, message))
+
+        # to prevent Qt or pyside2 warning
+        if mode == QtCore.QtWarningMsg:
+            return
         item = QListWidgetItem(message)
-        if message[0] == '_':
+        if message[0] == '<':
+            item.setText(message[2:])
             item.setBackground(QColor('#ffff99'))
         log.addItem(item)
         log.scrollToBottom()
-        if mode == QtCore.QtInfoMsg:
-            mode = 'INFO'
-        elif mode == QtCore.QtWarningMsg:
-            mode = 'WARNING'
-        elif mode == QtCore.QtCriticalMsg:
-            mode = 'CRITICAL'
-        elif mode == QtCore.QtFatalMsg:
-            mode = 'FATAL'
-        else:
-            mode = 'DEBUG'
-        print('%s: %s' % (mode, message))
+
 
     QtCore.qInstallMessageHandler(qt_message_handler)
 

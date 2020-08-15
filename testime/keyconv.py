@@ -16,7 +16,7 @@ def ModConv(mod):
     return state
 
 def KeysymConv(keysym):
-    # TBD
+    # TODO
     return keysym
 
  
