@@ -5,7 +5,16 @@ when I input Korean to SDL2 with Ibus on Linux.
 It would not be easy to analyze either side,
 so I decided to simply recreate this bug with python.
 
+After finishing this work, I thought that if I organize the results well,
+it could be used as a test tool, so I continued to work on it.
+
 ![TestIME](screenshot/TestIME_20200815.png)
+
+## Run
+
+```
+python3 testime.py
+```
 
 ## Todo
 
@@ -76,11 +85,6 @@ initial-input-mode
 switch-keys
 word-commit
 ```
-## Directories
-
-- ibus/     samples at ibus source. currently not working
-- pyside2/  pyside2 dbus communication sample
-
 ## Reference
 
 - https://seoyoungjin.github.io/ibus/text%20input/IBus/
