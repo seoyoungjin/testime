@@ -30,7 +30,7 @@ IBUS_INPUT_CONTEXT    = "org.freedesktop.IBus.InputContext"
 class IBusDriver(QtCore.QObject):
 
     commitText = QtCore.Signal(str)
-    preeditChaned = QtCore.Signal(str)
+    preeditChanged = QtCore.Signal()
 
     def __init__(self, name):
         super().__init__()
@@ -70,13 +70,17 @@ class IBusDriver(QtCore.QObject):
         self.__lookup_table = None
         self.__lookup_table_visible = False
 
-    # LATER
     def preedit(self):
-        return self.__preedit;
+        return self.__preedit
 
-    # LATER
     def preeditVisible(self):
-        return self.__preedit_visible;
+        return self.__preedit_visible
+
+    def engine(self):
+        return self.iface.GetEngine()[2] 
+
+    def ProcessKeyEvent(self, keysym, scancode, mod):
+        return self.iface.ProcessKeyEvent(keysym, scancode, mod)
 
     def __commit_text_cb(self, text):
         qDebug("< CommitText : %s" % text[2])
@@ -88,18 +92,21 @@ class IBusDriver(QtCore.QObject):
                 (text[2], cursor_pos, visible))
         self.__preedit = text[2]
         self.__preedit_visible = visible
+        self.preeditChanged.emit()
 
     def __show_preedit_text_cb(self):
         qDebug("< ShowPreeditText")
         if self.__preedit_visible:
             return
         self.__preedit_visible = True
+        self.preeditChanged.emit()
 
     def __hide_preedit_text_cb(self):
         qDebug("< HidePreeditText")
         if not self.__preedit_visible:
             return
         self.__preedit_visible = False
+        self.preeditChanged.emit()
 
     def __update_aux_text_cb(self, text, visible):
         qDebug("< UpdateAuxiliaryText")

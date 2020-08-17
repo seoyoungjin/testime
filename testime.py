@@ -13,8 +13,8 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from testime import IBusDriver
-from testime import FcitxDriver
+from testime.IBusDriver import IBusDriver
+from testime.FcitxDriver import FcitxDriver
 from testime.keyconv import KeysymConv, ModConv
 
 # Enable glib main loop support
@@ -22,24 +22,43 @@ dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 
 class DrawingArea(QWidget):
+
+    imes = ["Fcitx", "IBus"]
+
     def __init__(self, name):
         QWidget.__init__(self)
 
-        self.__text = ""
-        #self.driver = IBusDriver.IBusDriver(name)
-        self.driver = FcitxDriver.FcitxDriver(name)
-        self.driver.commitText.connect(self.commitText)
+        self.name = name
+        self.driver = None
 
+        self.__text = ""
+        self.onActivateIME(self.imes[0])
         self.setBackgroundRole(QPalette.Base);
         self.setAutoFillBackground(True)
 
-    def commitText(self, text):
+    def onActivateIME(self, ime):
+        assert(ime == "IBus" or ime == "Fcitx")
+        if ime == "IBus" and not isinstance(self.driver, IBusDriver):
+            self.driver = IBusDriver(self.name)
+        if ime == "Fcitx" and not isinstance(self.driver, FcitxDriver):
+            self.driver = FcitxDriver(self.name)
+        self.driver.commitText.connect(self.onCommitText)
+        self.driver.preeditChanged.connect(self.onPreeditChanged)
+
+    def onCommitText(self, text):
+        #qDebug("SLOT(commitText) : %s" % text)
         self.__text += text
+        self.updateTextRect()
+
+    def onPreeditChanged(self):
+        #qDebug("SLOT(preeditChanged) : %s" % self.driver.preedit())
+        self.updateTextRect()
 
     def updateTextRect(self):
         qDebug("SetCursorLocation")
         # TODO x, y, w, h
-        self.driver.iface.SetCursorLocation(0, 0, 5, 5)
+        # IBus and Fcitx different
+        # self.driver.iface.SetCursorLocation(0, 0, 5, 5)
         self.update()
 
     def paintEvent(self, event):
@@ -47,22 +66,23 @@ class DrawingArea(QWidget):
         painter.setFont(QFont("Arial",18))
         painter.drawText(0, 30, self.__text)
         # drw preedit text with diffrent color
-        if self.driver.preeditVisible() and self.driver.preedit():
+        if self.driver.preeditVisible():
             rect = painter.boundingRect(self.rect(), self.__text)
             painter.setPen(Qt.red)
             painter.drawText(rect.width(), 30, self.driver.preedit())
 
     def keyPressEvent(self, event):
-        keysym = KeysymConv(event.key())
         mod = ModConv(event.modifiers())
-        ret = self.driver.iface.ProcessKeyEvent(keysym, event.nativeScanCode(), mod)
+        keysym = KeysymConv(event.key(), mod)
+
+        ret = self.driver.ProcessKeyEvent(keysym, event.nativeScanCode(), mod)
         qDebug("keyPress : %s (%d) returns %d" %
-                (QKeySequence(event.key()).toString(), event.key(), ret))
+                (QKeySequence(event.key()).toString(), event.nativeScanCode(), ret))
         if not ret:
             if event.text().isprintable():
                 self.__text += event.text()
+                #self.driver.commitText.emit(event.text())
             elif event.key() == Qt.Key_Backspace:
-                # TODO ibus-hangul handles this
                 if not self.driver.preedit():
                     self.__text = self.__text[:-1]
             elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
@@ -75,7 +95,7 @@ class DrawingArea(QWidget):
 
     def focusInEvent(self, event):
         self.driver.iface.FocusIn()
-        qDebug("focusIn : Engine = %s" % self.driver.iface.GetEngine()[2])
+        qDebug("focusIn : Engine = %s" % self.driver.engine())
 
     def focusOutEvent(self, event):
         qDebug('focusOut')
@@ -102,8 +122,9 @@ if __name__ == '__main__':
     vlayout = QVBoxLayout()
 
     ime_combo = QComboBox()
-    ime_combo.addItem("IBus")
-    ime_combo.addItem("Fcitx")
+    for ime in DrawingArea.imes:
+        ime_combo.addItem(ime)
+    ime_combo.activated[str].connect(canvas.onActivateIME)
 
     testset_combo = QComboBox()
     testset_combo.addItem("2bulsik")
