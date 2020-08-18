@@ -74,10 +74,10 @@ class DrawingArea(QWidget):
     def keyPressEvent(self, event):
         mod = ModConv(event.modifiers())
         keysym = KeysymConv(event.key(), mod)
+        #print(event.key(), QKeySequence(event.key()).toString())
 
         ret = self.driver.ProcessKeyEvent(keysym, event.nativeScanCode(), mod)
-        qDebug("keyPress : %s (%d) returns %d" %
-                (QKeySequence(event.key()).toString(), event.nativeScanCode(), ret))
+        qDebug("keyPress : %d returns %d" % (event.nativeScanCode(), ret))
         if not ret:
             if event.text().isprintable():
                 self.__text += event.text()

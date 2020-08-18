@@ -1497,26 +1497,3 @@ WonSign = 0x20a9
 NewSheqelSign = 0x20aa
 DongSign = 0x20ab
 EuroSign = 0x20ac
-
-#__name_to_keycode = {}
-#__keycode_to_name = {}
-#for key, value in vars().items():
-#    if key.startswith("__") or \
-#       key in ("name_to_keycode", "keycode_to_name", "VoidSymbol"):
-#        continue
-#    if key.startswith("_"):
-#        key = key[1:]
-#    __name_to_keycode[key] = value
-#    __keycode_to_name[value] = key
-
-#def name_to_keycode(name):
-#    return __name_to_keycode.get(name, VoidSymbol)
-
-#def keycode_to_name(code):
-#    if __keycode_to_name.has_key(code):
-#        return __keycode_to_name[code]
-#    if code <  0xffff:
-#        return "0x%04x" % code
-#    else:
-#        return "0x%06x" % code
-
