@@ -21,8 +21,8 @@ python3 testime.py
 - [x] gui log
 - [x] view text and preedit text in different color
 - [x] backspace handling
-- [ ] finish keysym, keycode and modifiers conversion
-- [ ] fcitx
+- [x] finish keysym, keycode and modifiers conversion
+- [x] fcitx
 - [ ] cursor positon / lookup table position
 - [ ] batch test set
 - [ ] other language and IME(?)

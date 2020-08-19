@@ -39,6 +39,7 @@ class DrawingArea(QWidget):
     def onActivateIME(self, ime):
         assert(ime == "IBus" or ime == "Fcitx")
         if ime == "IBus" and not isinstance(self.driver, IBusDriver):
+            del self.driver
             self.driver = IBusDriver(self.name)
         if ime == "Fcitx" and not isinstance(self.driver, FcitxDriver):
             self.driver = FcitxDriver(self.name)

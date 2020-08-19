@@ -1,5 +1,7 @@
-#import keysyms
-#import modifier
+# vim:set et sts=4 sw=4:
+#
+# python -m testime.keyconv
+
 from . import keysyms
 from . import modifier
 
@@ -337,7 +339,6 @@ def KeysymConv(ksym, mod):
         return ksym
     return __keysym_qt2gtk[ksym]
 
- 
 def test():
     assert(ModConv(Qt.ShiftModifier) == modifier.SHIFT_MASK)
     assert(ModConv(Qt.ControlModifier) == modifier.CONTROL_MASK)
@@ -349,6 +350,5 @@ def test():
     assert(KeysymConv(Qt.Key_A, 0) == keysyms.a)
     assert(KeysymConv(Qt.Key_A, modifier.SHIFT_MASK) == keysyms.A)
 
-
 if __name__ == "__main__":
-        test()
+    test()

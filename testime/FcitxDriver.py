@@ -90,6 +90,9 @@ class FcitxDriver(QtCore.QObject):
         self.__lookup_table = None
         self.__lookup_table_visible = False
 
+    def __del__(self):
+        self.Quit()
+
     def preedit(self):
         return self.__preedit
 
@@ -98,6 +101,13 @@ class FcitxDriver(QtCore.QObject):
 
     def engine(self):
         return self.fcitx.GetCurrentIM()
+
+    def Reset(self):
+        self.iface.Reset()
+        self.iface.CloseIC()
+
+    def Quit(self):
+        self.iface.DestroyIC()
 
     def ProcessKeyEvent(self, keysym, keycode, mod):
         # event = UP or DOWN

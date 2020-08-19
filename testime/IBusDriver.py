@@ -70,6 +70,9 @@ class IBusDriver(QtCore.QObject):
         self.__lookup_table = None
         self.__lookup_table_visible = False
 
+    def __del__(self):
+        self.Quit()
+
     def preedit(self):
         return self.__preedit
 
@@ -78,6 +81,14 @@ class IBusDriver(QtCore.QObject):
 
     def engine(self):
         return self.iface.GetEngine()[2] 
+
+    def Reset(self):
+        self.iface.Reset()
+
+    def Quit(self):
+        # LATER
+        # connection cloase, unref
+        pass
 
     def ProcessKeyEvent(self, keysym, scancode, mod):
         return self.iface.ProcessKeyEvent(keysym, scancode, mod)
