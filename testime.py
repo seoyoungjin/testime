@@ -2,9 +2,9 @@
 # -'''- coding: utf-8 -'''-
 
 import sys
+import os
 from traceback import print_exc
 
-# import python dbus module and GLib mainloop support
 import dbus
 import dbus.mainloop.glib
 
@@ -20,11 +20,9 @@ from testime.keyconv import KeysymConv, ModConv
 # Enable glib main loop support
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
+IMES = ["Fcitx", "IBus"]
 
 class DrawingArea(QWidget):
-
-    imes = ["Fcitx", "IBus"]
-
     def __init__(self, name):
         QWidget.__init__(self)
 
@@ -32,7 +30,7 @@ class DrawingArea(QWidget):
         self.driver = None
 
         self.__text = ""
-        self.onActivateIME(self.imes[0])
+        self.onActivateIME(IMES[0])
         self.setBackgroundRole(QPalette.Base);
         self.setAutoFillBackground(True)
 
@@ -42,6 +40,7 @@ class DrawingArea(QWidget):
             del self.driver
             self.driver = IBusDriver(self.name)
         if ime == "Fcitx" and not isinstance(self.driver, FcitxDriver):
+            del self.driver
             self.driver = FcitxDriver(self.name)
         self.driver.commitText.connect(self.onCommitText)
         self.driver.preeditChanged.connect(self.onPreeditChanged)
@@ -66,7 +65,7 @@ class DrawingArea(QWidget):
         painter = QPainter(self)
         painter.setFont(QFont("Arial",18))
         painter.drawText(0, 30, self.__text)
-        # drw preedit text with diffrent color
+        # draw preedit text with diffrent color
         if self.driver.preeditVisible():
             rect = painter.boundingRect(self.rect(), self.__text)
             painter.setPen(Qt.red)
@@ -75,8 +74,9 @@ class DrawingArea(QWidget):
     def keyPressEvent(self, event):
         mod = ModConv(event.modifiers())
         keysym = KeysymConv(event.key(), mod)
-        #print(event.key(), QKeySequence(event.key()).toString())
-
+        if not keysym:
+            print(event.key(), QKeySequence(event.key()).toString())
+            return
         ret = self.driver.ProcessKeyEvent(keysym, event.nativeScanCode(), mod)
         qDebug("keyPress : %d returns %d" % (event.nativeScanCode(), ret))
         if not ret:
@@ -107,13 +107,14 @@ class DrawingArea(QWidget):
         self.update()
 
 
-# main function
 if __name__ == '__main__':
-    # Create the Qt Application
     app = QApplication(sys.argv)
 
-    window = QWidget()
+    window = QMainWindow()
+    window.setGeometry(200, 200, 500, 500)
     window.setWindowTitle("TestIME")
+
+    central = QWidget()
     layout = QGridLayout()
 
     canvas = DrawingArea("TestIME")
@@ -123,15 +124,20 @@ if __name__ == '__main__':
     vlayout = QVBoxLayout()
 
     ime_combo = QComboBox()
-    for ime in DrawingArea.imes:
+    for ime in IMES:
         ime_combo.addItem(ime)
     ime_combo.activated[str].connect(canvas.onActivateIME)
 
+    def listTestSet():
+        ts = [os.path.splitext(f)[0] for f in os.listdir('data') if f.endswith('.test')]
+        return ts
+
     testset_combo = QComboBox()
-    testset_combo.addItem("2bulsik")
-    testset_combo.addItem("3bulsik")
+    for testset in listTestSet():
+        testset_combo.addItem(testset)
 
     clear = QPushButton("Clear")
+    batch = QPushButton("Batch Test")
     quit = QPushButton("Quit")
     quit.clicked.connect(app.quit)
 
@@ -141,13 +147,16 @@ if __name__ == '__main__':
     vlayout.addWidget(testset_combo)
     vlayout.addStretch()
     vlayout.addWidget(clear)
+    vlayout.addWidget(batch)
     vlayout.addWidget(quit)
 
     layout.addWidget(canvas, 0 ,0)
     layout.addWidget(log, 1, 0)
     layout.addLayout(vlayout, 0, 1, 2 ,1)
 
-    window.setLayout(layout)
+    central.setLayout(layout)
+    window.setCentralWidget(central)
+    #window.statusBar().showMessage(IMES[0])
     window.show()
 
     def clear_canvas_log():
@@ -169,7 +178,7 @@ if __name__ == '__main__':
             text = 'D'
         print('%s: %s' % (text, message))
 
-        # to prevent Qt or pyside2 warning
+        # to prevent Qt warning
         if mode == QtCore.QtWarningMsg:
             return
         item = QListWidgetItem(message)

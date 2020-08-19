@@ -25,6 +25,7 @@ class DBusDriver(QtCore.QObject, metaclass=QABCMeta):
 
     @abstractmethod
     def Reset(self):
+        pass
 
     @abstractmethod
     def Quit(self):
