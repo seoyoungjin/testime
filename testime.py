@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 # -'''- coding: utf-8 -'''-
-
 import sys
-import os
-from traceback import print_exc
-
 import dbus
 import dbus.mainloop.glib
 
 from PySide2 import QtCore
-from PySide2.QtCore import *
-from PySide2.QtGui import *
+from PySide2.QtCore import Qt, QObject, QSize, QEventLoop, qDebug
+from PySide2.QtGui import QPainter, QFont, QPalette, QColor, QKeySequence
 from PySide2.QtWidgets import *
 
 from testime.IBusDriver import IBusDriver
@@ -31,7 +27,7 @@ class DrawingArea(QWidget):
 
         self.__text = ""
         self.onActivateIME(IMES[0])
-        self.setBackgroundRole(QPalette.Base);
+        self.setBackgroundRole(QPalette.Base)
         self.setAutoFillBackground(True)
 
     def onActivateIME(self, ime):
@@ -63,7 +59,7 @@ class DrawingArea(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setFont(QFont("Arial",18))
+        painter.setFont(QFont("Arial", 18))
         painter.drawText(0, 30, self.__text)
         # draw preedit text with diffrent color
         if self.driver.preeditVisible():
@@ -80,15 +76,15 @@ class DrawingArea(QWidget):
         ret = self.driver.ProcessKeyEvent(keysym, event.nativeScanCode(), mod)
         qDebug("keyPress : %d returns %d" % (event.nativeScanCode(), ret))
         if not ret:
+            QEventLoop().processEvents(QEventLoop.AllEvents, 1)
             if event.text().isprintable():
                 self.__text += event.text()
-                #self.driver.commitText.emit(event.text())
             elif event.key() == Qt.Key_Backspace:
                 if not self.driver.preedit():
                     self.__text = self.__text[:-1]
             elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
                 self.__text = ""
-        self.updateTextRect()
+            self.updateTextRect()
 
     def mousePressEvent(self, event):
         qDebug('mousePress')
@@ -129,6 +125,7 @@ if __name__ == '__main__':
     ime_combo.activated[str].connect(canvas.onActivateIME)
 
     def listTestSet():
+        import os
         ts = [os.path.splitext(f)[0] for f in os.listdir('data') if f.endswith('.test')]
         return ts
 
@@ -138,8 +135,8 @@ if __name__ == '__main__':
 
     clear = QPushButton("Clear")
     batch = QPushButton("Batch Test")
-    quit = QPushButton("Quit")
-    quit.clicked.connect(app.quit)
+    quitb = QPushButton("Quit")
+    quitb.clicked.connect(app.quit)
 
     vlayout.addWidget(QLabel("IME"))
     vlayout.addWidget(ime_combo)
@@ -148,11 +145,11 @@ if __name__ == '__main__':
     vlayout.addStretch()
     vlayout.addWidget(clear)
     vlayout.addWidget(batch)
-    vlayout.addWidget(quit)
+    vlayout.addWidget(quitb)
 
-    layout.addWidget(canvas, 0 ,0)
+    layout.addWidget(canvas, 0, 0)
     layout.addWidget(log, 1, 0)
-    layout.addLayout(vlayout, 0, 1, 2 ,1)
+    layout.addLayout(vlayout, 0, 1, 2, 1)
 
     central.setLayout(layout)
     window.setCentralWidget(central)
@@ -176,7 +173,7 @@ if __name__ == '__main__':
             text = 'F'
         else:
             text = 'D'
-        print('%s: %s' % (text, message))
+        #print('%s: %s' % (text, message))
 
         # to prevent Qt warning
         if mode == QtCore.QtWarningMsg:

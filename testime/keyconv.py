@@ -5,7 +5,7 @@
 from . import keysyms
 from . import modifier
 
-from PySide2.QtCore import *
+from PySide2.QtCore import Qt
 
 __keysym_qt2gtk = {
     Qt.Key_Escape : keysyms.Escape,
