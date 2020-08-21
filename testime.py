@@ -11,7 +11,7 @@ from PySide2.QtWidgets import *
 
 from testime.IBusDriver import IBusDriver
 from testime.FcitxDriver import FcitxDriver
-from testime.keyconv import KeysymConv, ModConv
+from testime.keyboard import KeycodeToKeysym
 
 # Enable glib main loop support
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -68,13 +68,14 @@ class DrawingArea(QWidget):
             painter.drawText(rect.width(), 30, self.driver.preedit())
 
     def keyPressEvent(self, event):
-        mod = ModConv(event.modifiers())
-        keysym = KeysymConv(event.key(), mod)
+        mod = event.nativeModifiers()
+        keycode = event.nativeScanCode()
+        keysym = KeycodeToKeysym[keycode]
         if not keysym:
             print(event.key(), QKeySequence(event.key()).toString())
             return
-        ret = self.driver.ProcessKeyEvent(keysym, event.nativeScanCode(), mod)
-        qDebug("keyPress : %d returns %d" % (event.nativeScanCode(), ret))
+        ret = self.driver.ProcessKeyEvent(keysym, keycode, mod)
+        qDebug("keyPress : %d returns %d" % (keycode, ret))
         if not ret:
             QEventLoop().processEvents(QEventLoop.AllEvents, 1)
             if event.text().isprintable():
@@ -160,7 +161,14 @@ if __name__ == '__main__':
         canvas.clear()
         log.clear()
 
+    def run_batch_test():
+        import unittest
+        suite = unittest.TestSuite()
+        suite.addTest(unittest.defaultTestLoader.loadTestsFromName('testime.batch_test'))
+        unittest.TextTestRunner().run(suite)
+
     clear.clicked.connect(clear_canvas_log)
+    batch.clicked.connect(run_batch_test)
 
     def qt_message_handler(mode, context, message):
         if mode == QtCore.QtInfoMsg:

@@ -16,6 +16,11 @@ it could be used as a test tool, so I continued to work on it.
 python3 testime.py
 ```
 
+Also you can run a batch test from the command line.
+```
+python3 -m testime.batch_test
+```
+
 ## Todo
 
 - [x] gui log
@@ -23,8 +28,10 @@ python3 testime.py
 - [x] backspace handling
 - [x] finish keysym, keycode and modifiers conversion
 - [x] fcitx
-- [ ] cursor positon / lookup table position
-- [ ] batch test set
+- [x] batch test set on GUI
+- [ ] batch test set command line option (key, driver, testset)
+- [ ] cursor positon
+- [ ] lookup table position(?)
 - [ ] other language and IME(?)
 
 ## System and tools version
