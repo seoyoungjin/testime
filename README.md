@@ -8,7 +8,7 @@ so I decided to simply recreate this bug with python.
 After finishing this work, I thought that if I organize the results well,
 it could be used as a test tool, so I continued to work on it.
 
-![TestIME](screenshot/TestIME_20200815.png)
+![TestIME](screenshot/TestIME_20200821.png)
 
 ## Run
 
