@@ -1,63 +1,60 @@
 # vim:set et sts=4 sw=4:
 import re
+from testime import modifier
 from testime.keyboard import KeynameToKeycode
 
-all_modifiers = {'alt', 'ctrl', 'shift', 'windows'}
+def parse_hotkey(exp):
+    "Helper function to specify keymap"
+    modifier_strs = []
+    while True:
+        m = re.match(r"\A(LC|LCtrl|RC|RCtrl|C|Ctrl|LM|LAlt|RM|RAlt|M|Alt|LShift|RShift|Shift|LSuper|LWin|RSuper|RWin|Super|Win)-", exp)
+        if m is None:
+            break
+        modifier = m.group(1)
+        modifier_strs.append(modifier)
+        exp = re.sub(r"\A{}-".format(modifier), "", exp)
+    key_str = exp
+    key = KeynameToKeycode[key_str]
+    return KeySequence(modmask_from_strings(modifier_strs), key)
 
-_is_str = lambda x: isinstance(x, str)
-_is_number = lambda x: isinstance(x, int)
-_is_list = lambda x: isinstance(x, (list, tuple))
+def modmask_from_strings(modifier_strs):
+    mask = 0
+    for mod in modifier_strs:
+        if mod in ('LShift', 'RShift', 'Shift'):
+            mask |= modifier.SHIFT_MASK
+        elif mod in ('LC', 'LCtrl', 'RC', 'RCtrl', 'C', 'Ctrl'):
+            mask |= modifier.CONTROL_MASK
+        elif mod in ('LM', 'LAlt', 'RM', 'RAlt', 'M', 'Alt'):
+            mask |= modifier.ALT_MASK
+        elif mod in ('LSuper', 'LWin', 'RSuper', 'RWin', 'Super', 'Win'):
+            mask |= modifier.SUPER_MASK
+    return mask
 
-def key_to_scan_codes(key):
-   print(key)
-   keycode = KeynameToKeycode[key]
-   print(key, keycode)
-   return key
+class KeySequence:
+    def __init__(self, modifier, keycode):
+        self.modifier = modifier
+        self.keycode = keycode
 
-def normalize_name(name):
-    """
-    Given a key name (e.g. "LEFT CONTROL"), clean up the string and convert to
-    the canonical representation (e.g. "left ctrl") if one is known.
-    """
-    if not name or not isinstance(name, basestring):
-        raise ValueError('Can only normalize non-empty string names. Unexpected '+ repr(name))
+    def __eq__(self, other):
+        if isinstance(other, KeySequence):
+            return self.modifier == other.modifier and self.keycode == other.keycode
+        return NotImplemented
 
-    if len(name) > 1:
-        name = name.lower()
-    if name != '_' and '_' in name:
-        name = name.replace('_', ' ')
+    def __hash__(self):
+        return hash((frozenset(self.modifier), self.keycode))
 
-    return canonical_names.get(name, name)
+    def __str__(self):
+        return format("modifier(%04x) keycode(%d)" % (self.modifier, self.keycode))
 
-def parse_hotkey(hotkey):
-    """
-    Example:
-        parse_hotkey("alt+shift+a, alt+b, c")
-        #    Keys:    ^~^ ^~~~^ ^  ^~^ ^  ^
-        #    Steps:   ^~~~~~~~~~^  ^~~~^  ^
-        # ((alt_codes, shift_codes, a_codes), (alt_codes, b_codes), (c_codes,))
-    """
-    if _is_number(hotkey) or len(hotkey) == 1:
-        scan_codes = key_to_scan_codes(hotkey)
-        step = (scan_codes,)
-        steps = (step,)
-        return steps
-    elif _is_list(hotkey):
-        if not any(map(_is_list, hotkey)):
-            step = tuple(key_to_scan_codes(k) for k in hotkey)
-            steps = (step,)
-            return steps
-        return hotkey
-
-    steps = []
-    for step in re.split(r',\s?', hotkey):
-        keys = re.split(r'\s?\+\s?', step)
-        steps.append(tuple(key_to_scan_codes(key) for key in keys))
-    return tuple(steps)
-
+    def with_modifier(self, modifier):
+        return KeySequence(self.modifier | modifier, self.keycode)
 
 if __name__ == '__main__':
-    a = parse_hotkey("alt+shift+a, alt+b, c")
+    a = parse_hotkey("Ctrl-Shift-c")
     print(a)
-    a = parse_hotkey("ctrl+space, c")
+    '''
+    a = parse_hotkey("Alt+Shift-a, Alt-b, c")
     print(a)
+    a = parse_hotkey("ctrl-space, c")
+    print(a)
+    '''

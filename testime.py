@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     def listTestSet():
         import os
-        ts = [os.path.splitext(f)[0] for f in os.listdir('data') if f.endswith('.test')]
+        ts = [os.path.splitext(f)[0] for f in os.listdir('test') if f.endswith('.json')]
         return ts
 
     testset_combo = QComboBox()

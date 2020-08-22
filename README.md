@@ -18,7 +18,7 @@ python3 testime.py
 
 Also you can run a batch test from the command line.
 ```
-python3 -m testime.batch_test
+python3 -m test.batch_test
 ```
 
 ## Todo
@@ -38,6 +38,7 @@ python3 -m testime.batch_test
 
 - ubuntu 20.04
 - ibus 1.5.22
+- fcitx version: 4.2.9.7
 - python 3.8.2
 - pip3 install pyside2
 
