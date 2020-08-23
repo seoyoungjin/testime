@@ -13,6 +13,7 @@ from testime.FcitxDriver import FcitxDriver
 from testime.keyboard import KeycodeToKeysym
 from testime.keyboard import KeynameToKeysym, KeynameToKeycode
 from testime.parse_hotkey import parse_hotkey
+from test.hangul_compose import get_2bulsik_test, get_3bulsik_test
 
 class TestObject(QObject):
     def __init__(self, name):
@@ -61,8 +62,7 @@ class TestObject(QObject):
         self.text = ""
 
 
-class BatchTestCase(unittest.TestCase):
-
+class FcitxTestCase(unittest.TestCase):
     def setUp(self):
         self.obj = TestObject("Fcitx")
         # IME key Contaol-space
@@ -72,15 +72,6 @@ class BatchTestCase(unittest.TestCase):
         del self.obj
 
     def test_sample(self):
-        self.obj.keyPressEvent('k')
-        self.obj.keyPressEvent('f')
-        self.obj.keyPressEvent('Return')
-
-        self.obj.driver.bus.flush()
-        while self.obj.preedit:
-            QEventLoop().processEvents(QEventLoop.AllEvents, 1)
-        self.assertEqual(self.obj.text, u"가")
-
         self.obj.clear()
         self.obj.keyPressEvent('k')
         self.obj.keyPressEvent('f')
@@ -91,10 +82,7 @@ class BatchTestCase(unittest.TestCase):
             QEventLoop().processEvents(QEventLoop.AllEvents, 1)
         self.assertEqual(self.obj.text, u"간")
 
-    def test_3bulsik(self):
-        with open('test/3bulsik.json', 'r') as handle:
-            cases = json.load(handle)
-
+    def __real_test(self, cases):
         for code in cases:
             self.obj.clear()
             key_sequence = cases[code]
@@ -107,9 +95,64 @@ class BatchTestCase(unittest.TestCase):
                 QEventLoop().processEvents(QEventLoop.AllEvents, 1)
             self.assertEqual(self.obj.text, code)
 
-    def test_batch(self):
-        pass
+    def test_2bulsik(self):
+        with open('test/2bulsik.json', 'r') as handle:
+            cases = json.load(handle)
+        self.__real_test(cases)
 
+    def test_3bulsik(self):
+        with open('test/3bulsik.json', 'r') as handle:
+            cases = json.load(handle)
+        self.__real_test(cases)
+
+    def test_all_2bulsik(self):
+        cases = get_2bulsik_test()
+        self.__real_test(cases)
+
+    def test_all_3bulsik(self):
+        cases = get_3bulsik_test()
+        self.__real_test(cases)
+
+class IBusTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.obj = TestObject("IBus")
+        # IME key Contaol-space
+        self.obj.keyPressEvent('Shift-space')
+
+    def tearDown(self):
+        del self.obj
+
+    def __real_test(self, cases):
+        for code in cases:
+            self.obj.clear()
+            key_sequence = cases[code]
+            qDebug("KeySequence : %s" % key_sequence)
+            for key in key_sequence:
+                self.obj.keyPressEvent(key)
+            self.obj.keyPressEvent('Return')
+
+            while self.obj.preedit:
+                QEventLoop().processEvents(QEventLoop.AllEvents, 1)
+            self.assertEqual(self.obj.text, code)
+
+    def test_2bulsik(self):
+        with open('test/2bulsik.json', 'r') as handle:
+            cases = json.load(handle)
+        self.__real_test(cases)
+
+    def test_3bulsik(self):
+        with open('test/3bulsik.json', 'r') as handle:
+            cases = json.load(handle)
+        self.__real_test(cases)
+
+    def test_all_2bulsik(self):
+        cases = get_2bulsik_test()
+        self.__real_test(cases)
+
+    def test_all_3bulsik(self):
+        cases = get_3bulsik_test()
+        self.__real_test(cases)
 
 if __name__ == '__main__':
     import sys
@@ -120,7 +163,10 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     suite = unittest.TestSuite()
-    suite.addTest(BatchTestCase('test_3bulsik'))
+    #suite.addTest(IBusTestCase('test_all_2bulsik'))
+    #suite.addTest(IBusTestCase('test_all_3bulsik'))
+    suite.addTest(FcitxTestCase('test_all_2bulsik'))
+    #suite.addTest(FcitxTestCase('test_all_3bulsik'))
     runner = unittest.TextTestRunner()
     runner.run(suite)
 

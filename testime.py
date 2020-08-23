@@ -163,8 +163,10 @@ if __name__ == '__main__':
 
     def run_batch_test():
         import unittest
+        from test.batch_test import IBusTestCase, FcitxTestCase 
+
         suite = unittest.TestSuite()
-        suite.addTest(unittest.defaultTestLoader.loadTestsFromName('testime.batch_test'))
+        suite.addTest(FcitxTestCase('test_2bulsik'))
         unittest.TextTestRunner().run(suite)
 
     clear.clicked.connect(clear_canvas_log)
@@ -181,7 +183,7 @@ if __name__ == '__main__':
             text = 'F'
         else:
             text = 'D'
-        #print('%s: %s' % (text, message))
+        print('%s: %s' % (text, message))
 
         # to prevent Qt warning
         if mode == QtCore.QtWarningMsg:

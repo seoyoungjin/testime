@@ -238,15 +238,22 @@ def compose_hangul(first, vowel, final=Jongsung.FILLER):
     code += (final - Jongsung.FILLER) + HANGUL_BASE
     return chr(code)
 
-def get_3bulsik_test():
-    sebulsik = {}
+def get_all_hangul_cases(key_seq):
+    cases = {}
     for cho in range(Chosung.G, Chosung.H + 1):
         for jung in range(Jungsung.A, Jungsung.I + 1):
             for jong in range(Jongsung.FILLER, Jongsung.H + 1):
                 code = compose_hangul(cho, jung, jong)
-                ks = sebulsik_keyboard[cho] + sebulsik_keyboard[jung] + sebulsik_keyboard[jong]
-                sebulsik[code] = ks
-    return sebulsik
+                ks = key_seq[cho] + key_seq[jung] + key_seq[jong]
+                cases[code] = ks
+    return cases
+
+def get_2bulsik_test():
+    return get_all_hangul_cases(dubulsik_keyboard)
+
+def get_3bulsik_test():
+    return get_all_hangul_cases(sebulsik_keyboard)
+
 
 if __name__ == "__main__":
     code = compose_hangul(Chosung.G, Jungsung.A)
@@ -257,6 +264,6 @@ if __name__ == "__main__":
     assert(code == u"힣")
 
     import json
-    sebulsik = get_3bulsik_test()
-    with open("test/3bulsik.json", "w") as outfile:
-        json.dump(sebulsik, outfile, indent=4, sort_keys=True)
+    all_cases = get_2bulsik_test()
+    with open("test/2bulsik.json", "w") as outfile:
+        json.dump(all_cases, outfile, indent=4, sort_keys=True)
