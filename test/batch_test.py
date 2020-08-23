@@ -49,7 +49,7 @@ class TestObject(QObject):
             ks = parse_hotkey(key)
             keycode = ks.keycode
             modifier = ks.modifier
-            keysym = KeycodeToKeysym[ks.keycode]
+            keysym = KeycodeToKeysym[ks.keycode][modifier & 0x03]
         else:
             keysym = KeynameToKeysym[key]
             keycode = KeynameToKeycode[key]
@@ -165,8 +165,8 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
     #suite.addTest(IBusTestCase('test_all_2bulsik'))
     #suite.addTest(IBusTestCase('test_all_3bulsik'))
-    suite.addTest(FcitxTestCase('test_all_2bulsik'))
-    #suite.addTest(FcitxTestCase('test_all_3bulsik'))
+    #suite.addTest(FcitxTestCase('test_all_2bulsik'))
+    suite.addTest(FcitxTestCase('test_all_3bulsik'))
     runner = unittest.TextTestRunner()
     runner.run(suite)
 

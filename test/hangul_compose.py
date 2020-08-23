@@ -109,14 +109,14 @@ dubulsik_keyboard = {
     Jungsung.YEO    : ['u'],
     Jungsung.YE     : ['Shift-p'],
     Jungsung.O      : ['h'],
-    Jungsung.WA     : ['f'],
+    Jungsung.WA     : ['h', 'k'],
     Jungsung.WAE    : ['h', 'o'],
     Jungsung.OE     : ['h', 'l'],
     Jungsung.YO     : ['y'],
     Jungsung.U      : ['n'],
     Jungsung.WEO    : ['n', 'j'],
     Jungsung.WE     : ['n', 'p'],
-    Jungsung.WI     : ['n', 'p'],
+    Jungsung.WI     : ['n', 'l'],
     Jungsung.YU     : ['b'],
     Jungsung.EU     : ['m'],
     Jungsung.YI     : ['m', 'l'],
@@ -161,8 +161,8 @@ sebulsik_keyboard = {
     Chosung.DD      : ['u', 'u'],
     Chosung.R       : ['y'],
     Chosung.M       : ['i'],
-    Chosung.B       : [';'],
-    Chosung.BB      : [';', ';'],
+    Chosung.B       : ['semicolon'],
+    Chosung.BB      : ['semicolon', 'semicolon'],
     Chosung.S       : ['n'],
     Chosung.SS      : ['n', 'n'],
     Chosung.NG      : ['j'],
@@ -170,9 +170,9 @@ sebulsik_keyboard = {
     Chosung.JJ      : ['l', 'l'],
     Chosung.C       : ['o'],
     Chosung.K       : ['0'],
-    Chosung.T       : ['"'],
+    Chosung.T       : ['apostrophe'],
     Chosung.P       : ['p'],
-    Chosung.H       : ['1'],
+    Chosung.H       : ['m'],
 
     Jungsung.A      : ['f'],
     Jungsung.AE     : ['r'],
@@ -182,8 +182,8 @@ sebulsik_keyboard = {
     Jungsung.E      : ['c'],
     Jungsung.YEO    : ['e'],
     Jungsung.YE     : ['7'],
-    Jungsung.O      : ['h'],
-    Jungsung.WA     : ['v'],
+    Jungsung.O      : ['v'],            # LATER : /
+    Jungsung.WA     : ['v', 'f'],
     Jungsung.WAE    : ['v', 'r'],
     Jungsung.OE     : ['v', 'd'],
     Jungsung.YO     : ['4'],
@@ -198,11 +198,11 @@ sebulsik_keyboard = {
 
     Jongsung.FILLER	: [],
     Jongsung.G		: ['x'],
-    Jongsung.GG		: ['x', 'x'],      # LATER : Shift-f : error
+    Jongsung.GG		: ['Shift-f'],      # LATER : x, x
     Jongsung.GS		: ['x', 'q'],
     Jongsung.N		: ['s'],
-    Jongsung.NJ		: ['s', 'Shift-1'], # J error
-    Jongsung.NH		: ['s', '1'],      # LATER : Shift-s : error
+    Jongsung.NJ		: ['s', 'Shift-1'],
+    Jongsung.NH		: ['Shift-s'],      # LATER : 's', '1'
     Jongsung.D		: ['Shift-a'],
     Jongsung.L		: ['w'],
     Jongsung.LG		: ['Shift-d'],      # LATER : w, x

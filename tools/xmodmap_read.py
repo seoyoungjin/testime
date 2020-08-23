@@ -25,6 +25,14 @@ def gen_keyname_to_keycode(xmodmap):
                 continue
             print('    "%s" : %d,' % (val[0], key))
 
+def keysym_str(name):
+    if name == 'NoSymbol':
+        return "0"
+    elif "0" <= name[0] and name[0] <= "9":
+        return "keysyms._" + name
+    else:
+        return "keysyms." + name
+
 def gen_keycode_to_keysym(xmodmap):
     for key in xmodmap:
         val = xmodmap[key]
@@ -32,10 +40,14 @@ def gen_keycode_to_keysym(xmodmap):
             continue
         if val[0].startswith('XF86') or val[0] in ['SunProps', 'SunFront', 'NoSymbol']:
             continue
-        if val[0][0] in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
-            print('    %d : keysyms._%s,' % (key, val[0]))
+        if len(val) < 4:
+            print('    %d : [%s, %s, %s, %s],' % (key, \
+                    keysym_str(val[0]), keysym_str(val[1]),
+                    keysym_str(val[2]), "0" ))
         else:
-            print('    %d : keysyms.%s,' % (key, val[0]))
+            print('    %d : [%s, %s, %s, %s],' % (key, \
+                    keysym_str(val[0]), keysym_str(val[1]),
+                    keysym_str(val[2]), keysym_str(val[3]) ))
 
 
 if __name__ == "__main__":

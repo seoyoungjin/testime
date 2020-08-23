@@ -70,7 +70,7 @@ class DrawingArea(QWidget):
     def keyPressEvent(self, event):
         mod = event.nativeModifiers()
         keycode = event.nativeScanCode()
-        keysym = KeycodeToKeysym[keycode]
+        keysym = KeycodeToKeysym[keycode][mod & 0x03]
         if not keysym:
             print(event.key(), QKeySequence(event.key()).toString())
             return
