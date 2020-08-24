@@ -2546,5 +2546,5 @@ if __name__ == "__main__":
      assert(KeynameToKeycode["Cancel"] == 231)
      assert(KeynameToKeysym["Cancel"] == keysyms.Cancel)
 
-     assert(KeycodeToKeysym("a", 1) == keysyms.A)
-     assert(KeycodeoKeysym("1", 1) == keysyms.exclam)
+     assert(KeycodeToKeysym[KeynameToKeycode["a"]][1] == keysyms.A)
+     assert(KeycodeToKeysym[KeynameToKeycode["1"]][1] == keysyms.exclam)
