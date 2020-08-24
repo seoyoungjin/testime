@@ -17,8 +17,13 @@ python3 testime.py
 ```
 
 Also you can run a batch test from the command line.
+
 ```
 python3 -m test.batch_test
+python3 -m test.batch_test IBus 2bulsik
+python3 -m test.batch_test IBus 3bulsik
+python3 -m test.batch_test Fcitx 2bulsik
+python3 -m test.batch_test Fcitx 3bulsik
 ```
 
 ## Todo
@@ -29,7 +34,7 @@ python3 -m test.batch_test
 - [x] finish keysym, keycode and modifiers conversion
 - [x] fcitx
 - [x] batch test set on GUI
-- [ ] batch test set command line option (key, driver, testset)
+- [x] batch test set on command line
 - [ ] cursor positon
 - [ ] lookup table position(?)
 - [ ] other language and IME(?)

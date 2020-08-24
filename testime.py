@@ -16,6 +16,7 @@ from testime.keyboard import KeycodeToKeysym
 # Enable glib main loop support
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
+MAX_LOG_COUNT = 1000
 IMES = ["Fcitx", "IBus"]
 
 class DrawingArea(QWidget):
@@ -53,8 +54,7 @@ class DrawingArea(QWidget):
     def updateTextRect(self):
         qDebug("SetCursorLocation")
         # TODO x, y, w, h
-        # IBus and Fcitx different
-        # self.driver.iface.SetCursorLocation(0, 0, 5, 5)
+        self.driver.SetCursorLocation(0, 0, 5, 5)
         self.update()
 
     def paintEvent(self, event):
@@ -72,8 +72,8 @@ class DrawingArea(QWidget):
         keycode = event.nativeScanCode()
         keysym = KeycodeToKeysym[keycode][mod & 0x03]
         if not keysym:
-            print(event.key(), QKeySequence(event.key()).toString())
-            return
+            keysym = KeycodeToKeysym[keycode][0]
+            print("KeycodeToKeysym", event.key(), mod, QKeySequence(event.key()).toString())
         ret = self.driver.ProcessKeyEvent(keysym, keycode, mod)
         qDebug("keyPress : %d returns %d" % (keycode, ret))
         if not ret:
@@ -123,7 +123,6 @@ if __name__ == '__main__':
     ime_combo = QComboBox()
     for ime in IMES:
         ime_combo.addItem(ime)
-    ime_combo.activated[str].connect(canvas.onActivateIME)
 
     def listTestSet():
         import os
@@ -143,9 +142,9 @@ if __name__ == '__main__':
     vlayout.addWidget(ime_combo)
     vlayout.addWidget(QLabel("Test Set"))
     vlayout.addWidget(testset_combo)
+    vlayout.addWidget(batch)
     vlayout.addStretch()
     vlayout.addWidget(clear)
-    vlayout.addWidget(batch)
     vlayout.addWidget(quitb)
 
     layout.addWidget(canvas, 0, 0)
@@ -154,7 +153,6 @@ if __name__ == '__main__':
 
     central.setLayout(layout)
     window.setCentralWidget(central)
-    #window.statusBar().showMessage(IMES[0])
     window.show()
 
     def clear_canvas_log():
@@ -166,11 +164,22 @@ if __name__ == '__main__':
         from test.batch_test import IBusTestCase, FcitxTestCase 
 
         suite = unittest.TestSuite()
-        suite.addTest(FcitxTestCase('test_2bulsik'))
+        if ime_combo.currentText() == "Fcitx":
+            testDriver = FcitxTestCase
+        else:
+            testDriver = IBusTestCase
+        suite.addTest(testDriver('test_' + testset_combo.currentText()))
         unittest.TextTestRunner().run(suite)
+
+    def activate_ime(ime: str):
+        canvas.clear()
+        log.clear()
+        canvas.onActivateIME(ime)
+        window.statusBar().showMessage(ime)
 
     clear.clicked.connect(clear_canvas_log)
     batch.clicked.connect(run_batch_test)
+    ime_combo.activated[str].connect(activate_ime)
 
     def qt_message_handler(mode, context, message):
         if mode == QtCore.QtInfoMsg:
@@ -192,6 +201,8 @@ if __name__ == '__main__':
         if message[0] == '<':
             item.setText(message[2:])
             item.setBackground(QColor('#ffff99'))
+        if MAX_LOG_COUNT < log.count():
+            log.clear()
         log.addItem(item)
         log.scrollToBottom()
 

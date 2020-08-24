@@ -3,6 +3,7 @@
 # python -m testime.batch
 
 import unittest
+import sys
 import json
 
 from PySide2.QtCore import QObject, qDebug, QEventLoop
@@ -14,6 +15,16 @@ from testime.keyboard import KeycodeToKeysym
 from testime.keyboard import KeynameToKeysym, KeynameToKeycode
 from testime.parse_hotkey import parse_hotkey
 from test.hangul_compose import get_2bulsik_test, get_3bulsik_test
+
+
+# check singleton instance
+if not QApplication.instance():
+    import dbus
+
+    # Enable glib main loop support
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    app = QApplication(sys.argv)
+
 
 class TestObject(QObject):
     def __init__(self, name):
@@ -33,7 +44,7 @@ class TestObject(QObject):
         del self.driver
 
     def onCommitText(self, text):
-        qDebug("SLOT(commitText) : %s" % text)
+        #qDebug("SLOT(commitText) : %s" % text)
         self.text += text
         self.preedit = False
 
@@ -44,7 +55,6 @@ class TestObject(QObject):
     def keyPressEvent(self, key):
         # parse_hotkey() also works for simple keystroke
         # check '-' for speed
-        # LATER - check speed for large number test case
         if key != '-' and '-' in key:
             ks = parse_hotkey(key)
             keycode = ks.keycode
@@ -55,7 +65,7 @@ class TestObject(QObject):
             keycode = KeynameToKeycode[key]
             modifier = 0
         ret = self.driver.ProcessKeyEvent(keysym, keycode, modifier)
-        qDebug("keyPress : %s(%d) returns %d" % (keycode, keysym, ret))
+        #qDebug("keyPress : %s(%d) returns %d" % (keycode, keysym, ret))
 
     def clear(self):
         self.preedit = True
@@ -72,6 +82,7 @@ class FcitxTestCase(unittest.TestCase):
         del self.obj
 
     def test_sample(self):
+        qDebug("KeySequence : %s" % ['k', 'f', 's'])
         self.obj.clear()
         self.obj.keyPressEvent('k')
         self.obj.keyPressEvent('f')
@@ -154,20 +165,24 @@ class IBusTestCase(unittest.TestCase):
         cases = get_3bulsik_test()
         self.__real_test(cases)
 
-if __name__ == '__main__':
-    import sys
-    import dbus
 
-    # Enable glib main loop support
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    app = QApplication(sys.argv)
+if __name__ == '__main__':
+    if len(sys.argv) != 3 or '-h' in sys.argv:
+        print('Usage : %s [IBus|Fcitx] [2bulsik|3bulsik]' % sys.argv[0])
+        exit(0)
+
+    IME = sys.argv[1]
+    HANGUL_KEYBOARD = sys.argv[2]
 
     suite = unittest.TestSuite()
-    #suite.addTest(IBusTestCase('test_all_2bulsik'))
-    #suite.addTest(IBusTestCase('test_all_3bulsik'))
-    #suite.addTest(FcitxTestCase('test_all_2bulsik'))
-    suite.addTest(FcitxTestCase('test_all_3bulsik'))
+    if IME == 'Fcitx':
+        testDriver = FcitxTestCase
+    else:
+        testDriver = IBusTestCase
+    if HANGUL_KEYBOARD == '2bulsik':
+    	suite.addTest(testDriver('test_all_2bulsik'))
+    else:
+    	suite.addTest(testDriver('test_all_3bulsik'))
     runner = unittest.TextTestRunner()
     runner.run(suite)
-
     #unittest.main()

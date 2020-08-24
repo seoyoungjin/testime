@@ -8,7 +8,6 @@ QObjectType = type(QtCore.QObject)
 class QABCMeta(QObjectType, ABCMeta):
     pass
 
-# LATER class Driver(dbus.service.Object):
 class DBusDriver(QtCore.QObject, metaclass=QABCMeta):
 
     @abstractmethod

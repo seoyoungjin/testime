@@ -73,22 +73,25 @@ class IBusDriver(QtCore.QObject):
     def __del__(self):
         self.Quit()
 
+    def engine(self):
+        return self.iface.GetEngine()[2]
+
     def preedit(self):
         return self.__preedit
 
     def preeditVisible(self):
         return self.__preedit_visible
 
-    def engine(self):
-        return self.iface.GetEngine()[2] 
-
     def Reset(self):
         self.iface.Reset()
 
     def Quit(self):
         # LATER
-        # connection cloase, unref
+        # connection close, unref
         pass
+
+    def SetCursorLocation(self, x, y, w, h):
+        self.iface.SetCursorLocation(x, y, w, h)
 
     def ProcessKeyEvent(self, keysym, scancode, mod):
         return self.iface.ProcessKeyEvent(keysym, scancode, mod)

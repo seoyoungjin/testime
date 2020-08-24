@@ -93,14 +93,14 @@ class FcitxDriver(QtCore.QObject):
     def __del__(self):
         self.Quit()
 
+    def engine(self):
+        return self.fcitx.GetCurrentIM()
+
     def preedit(self):
         return self.__preedit
 
     def preeditVisible(self):
         return not self.__preedit or len(self.__preedit)
-
-    def engine(self):
-        return self.fcitx.GetCurrentIM()
 
     def Reset(self):
         self.iface.Reset()
@@ -109,9 +109,11 @@ class FcitxDriver(QtCore.QObject):
     def Quit(self):
         self.iface.DestroyIC()
 
+    def SetCursorLocation(self, x, y, w, h):
+        self.iface.SetCursorRect(x, y, w, h)
+
     def ProcessKeyEvent(self, keysym, keycode, mod):
-        # event = UP or DOWN
-        # event_time = 0
+        # event = UP or DOWN, event_time = 0
         return self.iface.ProcessKeyEvent(keysym, keycode, mod, 0, 0)
 
     def __enable_im_cb(self):
