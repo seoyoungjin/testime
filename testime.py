@@ -27,6 +27,7 @@ class DrawingArea(QWidget):
         self.driver = None
 
         self.__text = ""
+        self.__textRect = QtCore.QRect()
         self.onActivateIME(IMES[0])
         self.setBackgroundRole(QPalette.Base)
         self.setAutoFillBackground(True)
@@ -53,19 +54,22 @@ class DrawingArea(QWidget):
 
     def updateTextRect(self):
         qDebug("SetCursorLocation")
-        # TODO x, y, w, h
-        self.driver.SetCursorLocation(0, 0, 5, 5)
+        # x, y, w, h
+        pos = self.mapToGlobal(self.pos())
+        pos.setX(pos.x() + self.__textRect.width())
+        pos.setY(pos.y() + self.__textRect.height())
+        self.driver.SetCursorLocation(pos.x(), pos.y(), 5, 5)
         self.update()
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setFont(QFont("Arial", 18))
         painter.drawText(0, 30, self.__text)
+        self.__textRect = painter.boundingRect(self.rect(), self.__text)
         # draw preedit text with diffrent color
         if self.driver.preeditVisible():
-            rect = painter.boundingRect(self.rect(), self.__text)
             painter.setPen(Qt.red)
-            painter.drawText(rect.width(), 30, self.driver.preedit())
+            painter.drawText(self.__textRect.width(), 30, self.driver.preedit())
 
     def keyPressEvent(self, event):
         mod = event.nativeModifiers()
